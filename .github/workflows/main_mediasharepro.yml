@@ -27,30 +27,30 @@ jobs:
           # 1. Create a clean folder
           mkdir -p output
           
-          # 2. Copy standalone files (The trailing /. copies contents, not the folder)
+          # 2. Copy standalone server files
           cp -r .next/standalone/. output/
           
-          # 3. Copy static assets into the correct folder structure
+          # 3. Copy static assets and public folder
           mkdir -p output/.next/static
           cp -r .next/static/. output/.next/static/
           cp -r public output/public
 
-      - name: Upload artifact for deployment job
+      - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: output # ✅ Only upload the production-ready files
-          include-hidden-files: true
+          path: output
+          include-hidden-files: true # ✅ Required for .next folder
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Download artifact from build job
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: node-app
-          path: deploy-package # ✅ Extract into a specific folder
+          path: deploy-package
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
@@ -58,5 +58,5 @@ jobs:
         with:
           app-name: 'mediasharepro'
           slot-name: 'Production'
-          package: ./deploy-package # ✅ Deploy ONLY the contents of the package
+          package: ./deploy-package # ✅ Only deploys production build contents
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_EF707BA29C3B49098E5F1436888FE7DC }}
